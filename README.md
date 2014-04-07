@@ -6,8 +6,7 @@ THIS IS NOT MEANT TO BE USED AS A PRODUCTION SERVER.
 THIS IS FOR LOCAL DEVELOPMENT ONLY. I WILL NOT BE RESPONSIBLE FOR 
 ANYTHING THAT GOES WRONG WITH IT.**
 
-This is my second working vagrant box. So I though I would share. 
-
+I am by no means an expert with this so don't judge me.
 Feel free to contact me with any questions or concerns. 
 
 This box has...
