@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+function createServerBlock()
+{
+
+    echo "Enter the site url: "
+    read input_variable
+    site_url=$input_variable
+
+    echo "Enter the sites root directory: "
+    read input_variable
+    site_dir=$input_variable
+
+    echo "Enter the sites files directory: "
+    read input_variable
+    site_files=$input_variable
+
+    site_dir="$site_dir\/$site_files"
+
+    read -p "Will the server block include and extra config directory? (y/N) " RESP
+    if [ "$RESP" = "y" ] ; then
+        echo "What is the directory name: "
+        read input_variable
+        config_dir="include \/etc\/nginx\/$input_variable\/*.conf;"
+    else
+        config_dir=""
+    fi
+
+    read -p "Will it force www: (Y/n)" RESP
+    if [ "$RESP" = "y" ] ; then
+        #lets get the top of the server block that forces www
+        www=$(</vagrant/templates/www.template)
+        printf -v www_template "$www" $site_url $site_url 
+    else 
+        www=""
+    fi
+
+    read -p "Will it have pretty urls: (Y/n)" RESP
+    if [ "$RESP" = "y" ] || [ "$RESP" = "Y" ] ; then
+        #lets get the top of the server block that forces www
+        pretty_urls="if (!-e \$request_filename) { rewrite \$ \/index.php?\$1 last; }"
+    else
+        pretty_urls=""
+    fi
+
+    #if the config directory does not exist then create it
+    if [ config_fir != "" ] && [ -d /vagrant/server_configs/nginx/"$config_dir" ] ; then
+        cp /vagrant/server_configs/nginx/$config_dir /etc/nginx/$config_dir
+    fi
+    
+
+    #if we are forcing www make sure we have a www.
+    if [[ -n $www_template ]] ; then
+        site_url="www."${site_url/www./""}
+        site_url="${site_url/\//\\//}"
+    fi
+
+    if [[ -f /etc/nginx/sites-enabled/$site_url ]] ; then
+        rm /etc/nginx/sites-enabled/$site_url /etc/nginx/sites-available/$site_url
+    fi
+
+    if [[ -n $www_template ]] ; then
+        echo "$www_template" >  /etc/nginx/sites-available/$site_url
+    fi
+
+    sed -e "s/URL/$site_url/g" -e "s/DIRECTORY/$site_dir/" -e "s/PRETTY_STUFF/$pretty_urls/" -e "s/CONF_D/$config_dir/" /vagrant/templates/server_block.template >> /etc/nginx/sites-available/$site_url
+    
+    ln -s /etc/nginx/sites-available/$site_url /etc/nginx/sites-enabled/
+}
+
+FILE="/tmp/out.$$"
+GREP="/bin/grep"
+
+# Make sure only root can run our script
+if [[ $EUID -ne 0 ]]; then
+   echo "
+----------------------------------------
+----------------------------------------
+This script must be run as root
+----------------------------------------
+----------------------------------------
+        " 1>&2
+   exit 1
+fi
+
+
+while [ true ]
+do
+    read -p "Would you like to create server blocks? (Y/n) " RESP
+    if [ "$RESP" = "y" ] || [ "$RESP" = "" ] ; then
+        createServerBlock
+	else
+       service nginx reload
+       break
+	fi
+done
+

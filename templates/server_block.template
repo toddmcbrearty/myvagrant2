@@ -1,0 +1,33 @@
+
+server {
+    listen   80;
+
+    server_name URL;
+
+    root /var/www/DIRECTORY;
+    index index.php index.html index.htm;
+
+    ## site specific config files
+    CONF_D
+
+    PRETTY_STUFF
+
+    location ~* .(html|php)$ {
+        #fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        # NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        ## Set socket for FPM
+        ## Reference file conf.d/php5-fpm.conf
+
+            fastcgi_pass php5-fpm-sock;
+            fastcgi_index index.php;
+            include fastcgi_params;
+            ## Server for memcache
+            fastcgi_param MEMCACHE_ADDRESS 127.0.0.1;
+
+    }
+
+    ## Logs
+    access_log /var/log/nginx/URL.access.log;
+    error_log /var/log/nginx/URL.error.log;
+}
