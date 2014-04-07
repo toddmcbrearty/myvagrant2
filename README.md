@@ -41,6 +41,9 @@ the questions asked are
 * Will it force www. (will simply force the site to load www.example.com instead of example.com)
 * Will it have pretty urls? (This will add a redirect that works with CodeIgniter and Laravel. Haven't tested with anything else)
 
+Known bugs with nxcreate 
+* For the "Enter files directory" if you have a nested directory it will break and you will need to manually update the file. I'll fix this at some point in life. 
+
 This will create your server_block in sites_available and symlink it to sites-enabled and will reload nginx
 
 
